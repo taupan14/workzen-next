@@ -8,13 +8,13 @@ import {
   Rp,
   StatusBadge,
   TREATMENT_LABEL,
+  btnCls,
+  inputCls,
 } from "@/components/documents/ui";
 import { createDraft, generatePdf, requestApproval } from "../actions";
 
 type Row = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-const btn =
-  "rounded bg-gray-900 px-3 py-1.5 text-sm text-white hover:bg-gray-700 disabled:opacity-40";
-const input = "rounded border px-2 py-1 text-sm";
+
 const fmtTs = (v?: string | null) =>
   v ? new Date(v).toLocaleString("id-ID") : "-";
 
@@ -106,17 +106,17 @@ export default async function DocumentPage({
   const header = (doc.header ?? {}) as Record<string, string>;
 
   return (
-    <main className="mx-auto max-w-6xl p-6">
+    <div className="space-y-6">
       <Link
         href={inq ? `/inquiries/${inq.id}/costing` : "/documents"}
-        className="text-sm text-gray-500 hover:underline"
+        className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-ink"
       >
         ← Costing {inq?.inquiry_no}
       </Link>
       <div className="mb-4 mt-1 flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-semibold">{doc.doc_no}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">{doc.doc_no}</h1>
         <StatusBadge status={doc.status} />
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-muted">
           {doc.doc_type} · v{doc.version}
           {doc.revision > 0 ? ` · rev ${doc.revision}` : ""} ·{" "}
           {doc.customer_name ?? "-"}
@@ -125,12 +125,12 @@ export default async function DocumentPage({
       <Notice msg={msg} err={err} />
 
       {doc.status === "SUPERSEDED" && (
-        <div className="mb-4 rounded border border-gray-300 bg-gray-50 p-3 text-sm">
+        <div className="mb-4 rounded border border-rule bg-mist p-3 text-sm">
           Versi ini sudah digantikan. Buka halaman costing untuk versi terbaru.
         </div>
       )}
       {doc.status === "REVISION_REQUESTED" && (
-        <div className="mb-4 rounded border border-orange-300 bg-orange-50 p-3 text-sm">
+        <div className="mb-4 rounded border border-warn bg-paper p-3 text-sm">
           Approver meminta revisi:{" "}
           <b>
             {(approvals ?? [])
@@ -147,23 +147,23 @@ export default async function DocumentPage({
         <div>
           <Card title="Ringkasan">
             <dl className="grid grid-cols-2 gap-y-1 text-sm">
-              <dt className="text-gray-500">Tanggal</dt>
+              <dt className="text-muted">Tanggal</dt>
               <dd>{doc.doc_date}</dd>
-              <dt className="text-gray-500">Berlaku sampai</dt>
+              <dt className="text-muted">Berlaku sampai</dt>
               <dd>{doc.valid_until ?? "-"}</dd>
-              <dt className="text-gray-500">Subtotal</dt>
+              <dt className="text-muted">Subtotal</dt>
               <dd>
                 <Rp v={doc.subtotal_idr} />
               </dd>
               {doc.tax_amount_idr != null && (
                 <>
-                  <dt className="text-gray-500">Pajak</dt>
+                  <dt className="text-muted">Pajak</dt>
                   <dd>
                     <Rp v={doc.tax_amount_idr} />
                   </dd>
                 </>
               )}
-              <dt className="text-gray-500">Total</dt>
+              <dt className="text-muted">Total</dt>
               <dd>
                 <b>
                   <Rp v={doc.total_idr} />
@@ -171,7 +171,7 @@ export default async function DocumentPage({
               </dd>
               {doc.conditional_idr > 0 && (
                 <>
-                  <dt className="text-gray-500">Bersyarat (di luar total)</dt>
+                  <dt className="text-muted">Bersyarat (di luar total)</dt>
                   <dd>
                     <Rp v={doc.conditional_idr} />
                   </dd>
@@ -179,25 +179,25 @@ export default async function DocumentPage({
               )}
               {header.vessel_name && (
                 <>
-                  <dt className="text-gray-500">Vessel</dt>
+                  <dt className="text-muted">Vessel</dt>
                   <dd>{header.vessel_name}</dd>
                 </>
               )}
               {internal && (
                 <>
-                  <dt className="text-gray-500">Margin (internal)</dt>
-                  <dd className="text-gray-500">
+                  <dt className="text-muted">Margin (internal)</dt>
+                  <dd className="text-muted">
                     <Rp v={internal.margin_total_idr} />
                   </dd>
                 </>
               )}
-              <dt className="text-gray-500">Disetujui</dt>
+              <dt className="text-muted">Disetujui</dt>
               <dd>{fmtTs(doc.approved_at)}</dd>
-              <dt className="text-gray-500">Terkirim</dt>
+              <dt className="text-muted">Terkirim</dt>
               <dd>
                 {fmtTs(doc.sent_at)}
                 {doc.sent_message_id ? (
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-muted">
                     {" "}
                     (bukti Gmail: {doc.sent_message_id})
                   </span>
@@ -211,14 +211,14 @@ export default async function DocumentPage({
               <div className="flex flex-wrap gap-2">
                 <form action={generatePdf}>
                   <input type="hidden" name="document_id" value={id} />
-                  <button className={btn} disabled={doc.status !== "DRAFT"}>
+                  <button className={btnCls} disabled={doc.status !== "DRAFT"}>
                     {doc.pdf_storage_path ? "Buat ulang PDF" : "Buat PDF"}
                   </button>
                 </form>
                 <form action={requestApproval}>
                   <input type="hidden" name="document_id" value={id} />
                   <button
-                    className={btn}
+                    className={btnCls}
                     disabled={doc.status !== "DRAFT" || !doc.pdf_storage_path}
                   >
                     Minta approval (email)
@@ -228,7 +228,7 @@ export default async function DocumentPage({
               {doc.status === "APPROVED" && !hasDraftMail && (
                 <form
                   action={createDraft}
-                  className="mt-4 flex flex-wrap items-end gap-2 border-t pt-3"
+                  className="mt-4 flex flex-wrap items-end gap-2 border-t border-rule pt-3"
                 >
                   <input type="hidden" name="document_id" value={id} />
                   <label className="text-sm">
@@ -237,7 +237,7 @@ export default async function DocumentPage({
                     <select
                       name="to_email"
                       defaultValue={doc.customer_email ?? ""}
-                      className={`${input} w-64`}
+                      className={`${inputCls} w-64`}
                     >
                       {(allowed ?? []).map((a: Row) => (
                         <option key={a.email} value={a.email}>
@@ -252,22 +252,22 @@ export default async function DocumentPage({
                     <br />
                     <input
                       name="cc"
-                      className={`${input} w-52`}
+                      className={`${inputCls} w-52`}
                       placeholder="a@x.test, b@x.test"
                     />
                   </label>
-                  <button className={btn}>Buat draft email customer</button>
+                  <button className={btnCls}>Buat draft email customer</button>
                 </form>
               )}
               {doc.status === "APPROVED" && hasDraftMail && (
-                <p className="mt-3 text-sm text-gray-600">
+                <p className="mt-3 text-sm text-muted">
                   Draft sudah dibuat. Periksa dan kirim dari Gmail; status
                   berubah menjadi Terkirim otomatis setelah ada bukti
                   pengiriman.
                 </p>
               )}
               {!["DRAFT", "APPROVED"].includes(doc.status) && (
-                <p className="mt-3 text-sm text-gray-500">
+                <p className="mt-3 text-sm text-muted">
                   Tidak ada aksi untuk status ini.
                 </p>
               )}
@@ -276,7 +276,7 @@ export default async function DocumentPage({
 
           <Card title="Email dokumen">
             {(emails ?? []).length === 0 ? (
-              <p className="text-sm text-gray-500">Belum ada.</p>
+              <p className="text-sm text-muted">Belum ada.</p>
             ) : (
               <ul className="space-y-1 text-sm">
                 {(emails ?? []).map((e: Row) => (
@@ -288,13 +288,13 @@ export default async function DocumentPage({
                     </span>{" "}
                     → {e.to_email} · <b>{e.status}</b>
                     {e.attempts > 0 && (
-                      <span className="text-gray-500">
+                      <span className="text-muted">
                         {" "}
                         · percobaan {e.attempts}
                       </span>
                     )}
                     {e.last_error && (
-                      <span className="text-red-700"> · {e.last_error}</span>
+                      <span className="text-danger"> · {e.last_error}</span>
                     )}
                   </li>
                 ))}
@@ -304,15 +304,13 @@ export default async function DocumentPage({
 
           <Card title="Balasan approval (semua percobaan tercatat)">
             {(approvals ?? []).length === 0 ? (
-              <p className="text-sm text-gray-500">Belum ada balasan.</p>
+              <p className="text-sm text-muted">Belum ada balasan.</p>
             ) : (
               <ul className="space-y-1 text-sm">
                 {(approvals ?? []).map((a: Row) => (
-                  <li key={a.id} className={a.is_valid ? "" : "text-gray-600"}>
+                  <li key={a.id} className={a.is_valid ? "" : "text-muted"}>
                     {fmtTs(a.created_at)} · {a.from_email} · {a.decision} →
-                    <b
-                      className={a.is_valid ? "text-green-700" : "text-red-700"}
-                    >
+                    <b className={a.is_valid ? "text-ok" : "text-danger"}>
                       {" "}
                       {a.is_valid ? a.result : "Ditolak"}
                     </b>
@@ -326,7 +324,7 @@ export default async function DocumentPage({
           </Card>
 
           <Card title="Riwayat">
-            <ul className="space-y-1 text-xs text-gray-600">
+            <ul className="space-y-1 text-xs text-muted">
               {(events ?? []).map((e: Row, i: number) => (
                 <li key={i}>
                   {fmtTs(e.created_at)} · {e.event_type}
@@ -345,7 +343,7 @@ export default async function DocumentPage({
                   href={pdfUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-sm text-blue-700 hover:underline"
+                  className="text-sm text-brand hover:underline"
                 >
                   Buka di tab baru
                 </a>
@@ -356,15 +354,15 @@ export default async function DocumentPage({
               <iframe
                 src={pdfUrl}
                 title="PDF"
-                className="h-[720px] w-full rounded border"
+                className="h-[720px] w-full rounded border border-rule"
               />
             ) : (
-              <p className="text-sm text-gray-500">PDF belum dibuat.</p>
+              <p className="text-sm text-muted">PDF belum dibuat.</p>
             )}
           </Card>
           <Card title="Isi dokumen (yang terlihat customer)">
             <table className="w-full text-xs">
-              <thead className="text-left text-gray-500">
+              <thead className="text-left text-muted">
                 <tr>
                   <th className="py-1">Bagian</th>
                   <th>Deskripsi</th>
@@ -374,14 +372,12 @@ export default async function DocumentPage({
               </thead>
               <tbody>
                 {(lines ?? []).map((l: Row) => (
-                  <tr key={l.id} className="border-t align-top">
-                    <td className="py-1 pr-2 text-gray-500">
-                      {l.section_code}
-                    </td>
+                  <tr key={l.id} className="border-t border-rule align-top">
+                    <td className="py-1 pr-2 text-muted">{l.section_code}</td>
                     <td className="pr-2">
                       {l.description}
                       {l.treatment !== "CONFIRMED" && (
-                        <span className="ml-1 text-gray-500">
+                        <span className="ml-1 text-muted">
                           [{TREATMENT_LABEL[l.treatment] ?? l.treatment}]
                         </span>
                       )}
@@ -399,6 +395,6 @@ export default async function DocumentPage({
           </Card>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

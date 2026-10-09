@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ChevronDown, Download, Paperclip } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  Download,
+  FileText,
+  Paperclip,
+} from "lucide-react";
 import { serverClient } from "@/lib/supabase/server";
 import { getI18n } from "@/lib/i18n/server";
 import { INQUIRY_TONE, TASK_TONE, fmtDate } from "@/lib/format";
@@ -8,6 +14,8 @@ import { suggestDepartments } from "@/lib/routing";
 import { confidenceThreshold, showFreeTierNotice } from "@/lib/ai/config";
 import { clarificationDraft } from "@/lib/ai/clarification";
 import { Status } from "@/components/status";
+import { Rp, StatusBadge } from "@/components/documents/ui";
+import { p4EventLabel, p4Labels } from "@/lib/documents/labels";
 import { createTasksAction } from "./actions";
 import {
   acceptConfidentAction,
@@ -30,6 +38,20 @@ export default async function InquiryDetail({
   const { lang, t } = await getI18n();
   const supabase = await serverClient();
 
+  // Costing & dokumen hanya untuk staf (RLS juga membatasi; ini agar tautan tidak tampil sia-sia).
+  const { data: auth } = await supabase.auth.getUser();
+  const { data: me } = auth.user
+    ? await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", auth.user.id)
+        .maybeSingle()
+    : { data: null };
+  const isStaff = ["admin", "coo", "sales_lead", "sales"].includes(
+    me?.role ?? "",
+  );
+  const p4 = p4Labels(lang);
+
   const { data: inquiry } = await supabase
     .from("inquiries")
     .select(
@@ -39,48 +61,63 @@ export default async function InquiryDetail({
     .maybeSingle();
   if (!inquiry) notFound();
 
-  const [emails, attachments, tasks, events, depts, rules, extractionRes] =
-    await Promise.all([
-      supabase
-        .from("email_messages")
-        .select("id,direction,from_email,subject,body_text,received_at")
-        .eq("inquiry_id", id)
-        .order("received_at"),
-      supabase
-        .from("attachments")
-        .select("id,filename,size_bytes,process_status")
-        .eq("inquiry_id", id),
-      supabase
-        .from("tasks_with_flags")
-        .select("id,task_no,scope,deadline,status,is_overdue,departments(name)")
-        .eq("inquiry_id", id)
-        .order("created_at"),
-      supabase
-        .from("workflow_events")
-        .select("id,event_type,created_at")
-        .eq("inquiry_id", id)
-        .order("id", { ascending: false })
-        .limit(30),
-      supabase
-        .from("departments")
-        .select("id,code,name,email")
-        .eq("is_active", true)
-        .order("name"),
-      supabase
-        .from("routing_rules")
-        .select("department_id,keywords,priority")
-        .eq("is_active", true),
-      supabase
-        .from("ai_extractions")
-        .select(
-          "id,summary,classification,overall_confidence,language,prompt_version,model,created_at,routing",
-        )
-        .eq("inquiry_id", id)
-        .eq("is_current", true)
-        .maybeSingle(),
-    ]);
+  const [
+    emails,
+    attachments,
+    tasks,
+    events,
+    depts,
+    rules,
+    extractionRes,
+    docsRes,
+  ] = await Promise.all([
+    supabase
+      .from("email_messages")
+      .select("id,direction,from_email,subject,body_text,received_at")
+      .eq("inquiry_id", id)
+      .order("received_at"),
+    supabase
+      .from("attachments")
+      .select("id,filename,size_bytes,process_status")
+      .eq("inquiry_id", id),
+    supabase
+      .from("tasks_with_flags")
+      .select("id,task_no,scope,deadline,status,is_overdue,departments(name)")
+      .eq("inquiry_id", id)
+      .order("created_at"),
+    supabase
+      .from("workflow_events")
+      .select("id,event_type,created_at")
+      .eq("inquiry_id", id)
+      .order("id", { ascending: false })
+      .limit(30),
+    supabase
+      .from("departments")
+      .select("id,code,name,email")
+      .eq("is_active", true)
+      .order("name"),
+    supabase
+      .from("routing_rules")
+      .select("department_id,keywords,priority")
+      .eq("is_active", true),
+    supabase
+      .from("ai_extractions")
+      .select(
+        "id,summary,classification,overall_confidence,language,prompt_version,model,created_at,routing",
+      )
+      .eq("inquiry_id", id)
+      .eq("is_current", true)
+      .maybeSingle(),
+    // Phase 4. Tabel belum ada (migrasi belum jalan) atau bukan staf -> kosong, tanpa error halaman.
+    supabase
+      .from("documents")
+      .select("id,doc_no,doc_type,version,revision,status,total_idr")
+      .eq("inquiry_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
 
   const extraction = extractionRes.data;
+  const docs = isStaff && !docsRes.error ? (docsRes.data ?? []) : [];
   const items: AiItem[] = extraction
     ? (((
         await supabase
@@ -193,6 +230,14 @@ export default async function InquiryDetail({
             />
           </span>
         </p>
+        {isStaff && (
+          <Link
+            href={`/inquiries/${id}/costing`}
+            className="mt-4 inline-flex items-center gap-2 rounded-md border border-rule bg-field px-3 py-1.5 text-sm font-medium transition-colors hover:border-brand"
+          >
+            <FileText className="size-4" aria-hidden /> {p4.costingLink}
+          </Link>
+        )}
       </header>
 
       {error && (
@@ -274,6 +319,40 @@ export default async function InquiryDetail({
           <p className="text-muted">{d.tasksEmpty}</p>
         )}
       </section>
+
+      {isStaff && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold">{p4.documentsTitle}</h2>
+          {docs.length ? (
+            <ul className="divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper">
+              {docs.map((x: any) => (
+                <li key={x.id}>
+                  <Link
+                    href={`/documents/${x.id}`}
+                    className="flex flex-wrap items-baseline justify-between gap-2 px-4 py-3 transition-colors hover:bg-mist"
+                  >
+                    <span className="min-w-0">
+                      <span className="font-medium">{x.doc_no}</span>
+                      <span className="block text-sm text-muted">
+                        {x.doc_type} · v{x.version}
+                        {x.revision > 0 ? ` · rev ${x.revision}` : ""}
+                      </span>
+                    </span>
+                    <span className="text-right text-sm">
+                      <StatusBadge status={x.status} />
+                      <span className="block text-muted">
+                        <Rp v={x.total_idr} />
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted">{p4.documentsEmpty}</p>
+          )}
+        </section>
+      )}
 
       {!closed && (
         <section>
@@ -366,7 +445,9 @@ export default async function InquiryDetail({
         <ol className="ml-1 space-y-2 border-l-2 border-rule">
           {(events.data ?? []).map((e) => (
             <li key={e.id} className="pl-4 text-sm">
-              {t.status.events[e.event_type] ?? e.event_type}
+              {t.status.events[e.event_type] ??
+                p4EventLabel(lang, e.event_type) ??
+                e.event_type}
               <span className="text-muted">
                 {" "}
                 · {fmtDate(e.created_at, lang)}

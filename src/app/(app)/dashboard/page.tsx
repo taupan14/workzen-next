@@ -6,55 +6,13 @@ import { getI18n } from "@/lib/i18n/server";
 import { INQUIRY_TONE, timeAgo } from "@/lib/format";
 import { Status } from "@/components/status";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { p4EventLabel, p4Labels } from "@/lib/documents/labels";
 
 type Counter = {
   label: string;
   value: number;
   tone?: "warn" | "danger";
   href?: string;
-};
-
-// Label Phase 4. Jika ingin mengikuti pola i18n proyek, pindahkan ke t.dashboard / t.status.events.
-const P4 = {
-  id: {
-    title: "Costing & Dokumen",
-    pendingApproval: "Menunggu approval",
-    approvedUnsent: "Approved, belum terkirim",
-    revisions: "Permintaan revisi",
-    docEmailFailed: "Email dokumen gagal",
-  },
-  en: {
-    title: "Costing & Documents",
-    pendingApproval: "Awaiting approval",
-    approvedUnsent: "Approved, not sent",
-    revisions: "Revision requests",
-    docEmailFailed: "Document emails failed",
-  },
-};
-
-const P4_EVENTS: Record<"id" | "en", Record<string, string>> = {
-  id: {
-    document_compiled: "Dokumen dibuat",
-    document_pdf_attached: "PDF dokumen dibuat",
-    approval_requested: "Approval diminta",
-    approval_reply: "Balasan approval diterima",
-    document_sent: "Dokumen terkirim ke customer",
-    documents_invalidated: "Dokumen dibatalkan karena revisi",
-    revision_requested: "Permintaan revisi dibuat",
-    customer_draft_queued: "Draft email customer diantrekan",
-    document_email_cancelled: "Email dokumen dibatalkan",
-  },
-  en: {
-    document_compiled: "Document compiled",
-    document_pdf_attached: "Document PDF generated",
-    approval_requested: "Approval requested",
-    approval_reply: "Approval reply received",
-    document_sent: "Document sent to customer",
-    documents_invalidated: "Documents invalidated by revision",
-    revision_requested: "Revision request created",
-    customer_draft_queued: "Customer email draft queued",
-    document_email_cancelled: "Document email cancelled",
-  },
 };
 
 function CounterGrid({ items, label }: { items: Counter[]; label: string }) {
@@ -134,8 +92,7 @@ export default async function Dashboard() {
     !s.last_sync || Date.now() - new Date(s.last_sync).getTime() > 10 * 60_000;
   const bad = Boolean(s.last_sync_error) || (Boolean(s.last_sync) && syncStale);
   const d = t.dashboard;
-  const p4t = lang === "en" ? P4.en : P4.id;
-  const p4Events = lang === "en" ? P4_EVENTS.en : P4_EVENTS.id;
+  const p4t = p4Labels(lang);
   const p = (p4res.data ?? {}) as Record<string, number>;
   const showP4 = !p4res.error && p4res.data != null;
   let statsError: string | null = null;
@@ -308,7 +265,7 @@ export default async function Dashboard() {
           {(events.data ?? []).map((e) => {
             const label =
               t.status.events[e.event_type] ??
-              p4Events[e.event_type] ??
+              p4EventLabel(lang, e.event_type) ??
               e.event_type;
             return (
               <li key={e.id} className="pl-4 text-sm">

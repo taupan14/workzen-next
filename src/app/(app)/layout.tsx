@@ -55,6 +55,11 @@ export default async function AppLayout({
                   label: t.nav.inquiries,
                 },
                 { key: "tasks", href: "/tasks", label: t.nav.tasks },
+                {
+                  key: "documents",
+                  href: "/documents",
+                  label: t.nav.documents,
+                },
               ]
         }
         user={{

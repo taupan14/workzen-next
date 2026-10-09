@@ -1,4 +1,4 @@
-# 04 — Web app (Next.js)
+# WORKZEN
 
 Dashboard operasional (Next.js 15, TypeScript, Tailwind v4) sekaligus endpoint Inngest dan integrasi Gmail. UI dua bahasa (ID/EN) dan dua mode (terang/gelap), navigasi di atas.
 
@@ -14,16 +14,17 @@ cp .env.example .env.local     # isi nilai dari 01 dan 02
 npm run dev                    # terminal 1  -> http://localhost:3000
 npm run inngest:dev            # terminal 2  -> http://localhost:8288
 ```
+
 Login dengan user yang dibuat di Supabase (sudah dijadikan admin).
 
 ## Environment
 
-| Variabel | Asal |
-|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | `01-supabase` |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`, `GMAIL_MAILBOX`, `GMAIL_INTAKE_QUERY` | `02-google-gmail` |
-| `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` | `03-inngest` (production) |
-| `EMAIL_LANG` | `id`, `en`, atau `both`: bahasa email task ke departemen |
+| Variabel                                                                                                  | Asal                                                     |
+| --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`                  | `01-supabase`                                            |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`, `GMAIL_MAILBOX`, `GMAIL_INTAKE_QUERY` | `02-google-gmail`                                        |
+| `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY`                                                                | `03-inngest` (production)                                |
+| `EMAIL_LANG`                                                                                              | `id`, `en`, atau `both`: bahasa email task ke departemen |
 
 `SUPABASE_SERVICE_ROLE_KEY` dan token Google hanya boleh ada di environment server.
 

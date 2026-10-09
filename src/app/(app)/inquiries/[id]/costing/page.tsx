@@ -14,6 +14,9 @@ import {
   Rp,
   StatusBadge,
   TREATMENT_LABEL,
+  btnCls,
+  btnLightCls,
+  inputCls,
 } from "@/components/documents/ui";
 import {
   assignTaskScenario,
@@ -39,16 +42,11 @@ interface Readiness {
   warnings: Array<{ code: string; line_id?: string; detail?: string }>;
 }
 
-const input = "rounded border px-2 py-1 text-sm";
-const btn =
-  "rounded bg-gray-900 px-3 py-1.5 text-sm text-white hover:bg-gray-700 disabled:opacity-40";
-const btnLight = "rounded border px-3 py-1.5 text-sm hover:bg-gray-50";
-
 function Select({
   name,
   value,
   options,
-  className = input,
+  className = inputCls,
 }: {
   name: string;
   value?: string | null;
@@ -88,7 +86,7 @@ function LineForm({
   return (
     <form
       action={saveLine}
-      className={`mb-3 rounded border p-3 ${line ? "bg-white" : "border-dashed bg-gray-50"}`}
+      className={`mb-3 rounded border border-rule p-3 ${line ? "bg-paper" : "border-dashed border-rule bg-mist"}`}
     >
       <input type="hidden" name="inquiry_id" value={inquiryId} />
       <input type="hidden" name="scenario_id" value={scenario.id} />
@@ -98,89 +96,89 @@ function LineForm({
           name="section_code"
           value={line?.section_code ?? "UNSORTED"}
           options={[["UNSORTED", "(pilih bagian)"], ...sections]}
-          className={`${input} col-span-3`}
+          className={`${inputCls} col-span-3`}
         />
         <input
           name="description"
           defaultValue={v("description")}
           placeholder="Deskripsi (tampil ke customer)"
           required
-          className={`${input} col-span-9`}
+          className={`${inputCls} col-span-9`}
         />
         <input
           name="qty"
           defaultValue={v("qty")}
           placeholder="Qty"
           inputMode="decimal"
-          className={`${input} col-span-2`}
+          className={`${inputCls} col-span-2`}
         />
         <input
           name="uom"
           defaultValue={v("uom")}
           placeholder="Unit"
-          className={`${input} col-span-2`}
+          className={`${inputCls} col-span-2`}
         />
         <input
           name="qty2"
           defaultValue={v("qty2")}
           placeholder="Qty2 (1)"
           inputMode="decimal"
-          className={`${input} col-span-2`}
+          className={`${inputCls} col-span-2`}
         />
         <input
           name="uom2"
           defaultValue={v("uom2")}
           placeholder="Unit2"
-          className={`${input} col-span-2`}
+          className={`${inputCls} col-span-2`}
         />
         <input
           name="cost_rate"
           defaultValue={v("cost_rate")}
           placeholder="Rate (biaya)"
           inputMode="decimal"
-          className={`${input} col-span-2`}
+          className={`${inputCls} col-span-2`}
         />
         <input
           name="currency"
           defaultValue={line?.currency ?? "IDR"}
           placeholder="IDR"
-          className={`${input} col-span-2 uppercase`}
+          className={`${inputCls} col-span-2 uppercase`}
         />
         <input
           name="margin_pct"
           defaultValue={v("margin_pct")}
           placeholder="Margin %"
           inputMode="decimal"
-          className={`${input} col-span-2`}
+          className={`${inputCls} col-span-2`}
         />
         <input
           name="discount_pct"
           defaultValue={v("discount_pct")}
           placeholder="Diskon %"
           inputMode="decimal"
-          className={`${input} col-span-2`}
+          className={`${inputCls} col-span-2`}
         />
         <input
           name="validity_until"
           type="date"
           defaultValue={line?.validity_until ?? ""}
-          className={`${input} col-span-3`}
+          className={`${inputCls} col-span-3`}
         />
         <Select
           name="treatment"
           value={line?.treatment ?? "CONFIRMED"}
           options={Object.entries(TREATMENT_LABEL)}
-          className={`${input} col-span-4`}
+          className={`${inputCls} col-span-4`}
         />
         <Select
           name="requirement_status"
           value={line?.requirement_status ?? "PENDING"}
           options={Object.entries(REQUIREMENT_LABEL)}
-          className={`${input} col-span-5`}
+          className={`${inputCls} col-span-5`}
         />
       </div>
       <details className="mt-2 text-sm">
-        <summary className="cursor-pointer text-gray-600">
+        <summary className="cursor-pointer text-muted">
           Lanjutan (vendor, catatan, persen dari baris lain)
         </summary>
         <div className="mt-2 grid grid-cols-12 gap-2">
@@ -188,21 +186,21 @@ function LineForm({
             name="vendor"
             defaultValue={v("vendor")}
             placeholder="Vendor (internal)"
-            className={`${input} col-span-4`}
+            className={`${inputCls} col-span-4`}
           />
           <input
             name="sell_rate_override"
             defaultValue={v("sell_rate_override")}
             placeholder="Harga jual manual"
             inputMode="decimal"
-            className={`${input} col-span-3`}
+            className={`${inputCls} col-span-3`}
           />
           <input
             name="sort_order"
             defaultValue={v("sort_order")}
             placeholder="Urutan"
             inputMode="numeric"
-            className={`${input} col-span-2`}
+            className={`${inputCls} col-span-2`}
           />
           <Select
             name="formula"
@@ -211,14 +209,14 @@ function LineForm({
               ["QTY_RATE", "Qty × Qty2 × Rate"],
               ["PERCENT_OF_LINE", "Persen dari baris lain"],
             ]}
-            className={`${input} col-span-3`}
+            className={`${inputCls} col-span-3`}
           />
           <input
             name="percent_value"
             defaultValue={v("percent_value")}
             placeholder="Persen (mis. 20)"
             inputMode="decimal"
-            className={`${input} col-span-3`}
+            className={`${inputCls} col-span-3`}
           />
           <Select
             name="parent_line_id"
@@ -235,54 +233,58 @@ function LineForm({
                     ],
                 ),
             ]}
-            className={`${input} col-span-9`}
+            className={`${inputCls} col-span-9`}
           />
           <input
             name="remark"
             defaultValue={v("remark")}
             placeholder="Catatan ke customer"
-            className={`${input} col-span-6`}
+            className={`${inputCls} col-span-6`}
           />
           <input
             name="condition_text"
             defaultValue={v("condition_text")}
             placeholder="Kondisi (tampil ke customer)"
-            className={`${input} col-span-6`}
+            className={`${inputCls} col-span-6`}
           />
           <input
             name="internal_note"
             defaultValue={v("internal_note")}
             placeholder="Catatan internal (tidak pernah ke customer)"
-            className={`${input} col-span-6`}
+            className={`${inputCls} col-span-6`}
           />
           <input
             name="exception_note"
             defaultValue={v("exception_note")}
             placeholder="Catatan pengecualian (wajib bila Pengecualian)"
-            className={`${input} col-span-6`}
+            className={`${inputCls} col-span-6`}
           />
         </div>
       </details>
       <div className="mt-2 flex flex-wrap items-center gap-2">
-        <button className={btn}>{line ? "Simpan" : "Tambah baris"}</button>
+        <button className={btnCls}>{line ? "Simpan" : "Tambah baris"}</button>
         {line && (
           <>
-            <button formAction={deleteLine} formNoValidate className={btnLight}>
+            <button
+              formAction={deleteLine}
+              formNoValidate
+              className={btnLightCls}
+            >
               Hapus
             </button>
-            <span className="ml-2 text-sm text-gray-600">
+            <span className="ml-2 text-sm text-muted">
               Harga jual: <Rp v={line.sell_amount_idr} />
             </span>
             {issues.map((i) => (
               <span
                 key={i}
-                className="rounded bg-red-100 px-2 py-0.5 text-xs text-red-700"
+                className="rounded border border-danger px-2 py-0.5 text-xs text-danger"
               >
                 {describeCode(ISSUE_MESSAGES, i)}
               </span>
             ))}
             {line.source_cost_item_id && (
-              <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+              <span className="rounded border border-rule px-2 py-0.5 text-xs text-muted">
                 dari task
               </span>
             )}
@@ -363,17 +365,19 @@ export default async function CostingPage({
   const showInternal = role !== "dept_user";
 
   return (
-    <main className="mx-auto max-w-6xl p-6">
+    <div className="space-y-6">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <Link
             href={`/inquiries/${id}`}
-            className="text-sm text-gray-500 hover:underline"
+            className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-ink"
           >
             ← Inquiry {inquiry.inquiry_no}
           </Link>
-          <h1 className="text-xl font-semibold">Costing &amp; Dokumen</h1>
-          <p className="text-sm text-gray-600">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Costing &amp; Dokumen
+          </h1>
+          <p className="text-sm text-muted">
             {cust?.name ?? "-"} {cust?.email ? `(${cust.email})` : ""} —{" "}
             {inquiry.subject}
           </p>
@@ -392,37 +396,37 @@ export default async function CostingPage({
               name="code"
               placeholder="Kode (S1)"
               required
-              className={`${input} w-24 uppercase`}
+              className={`${inputCls} w-24 uppercase`}
             />
             <input
               name="name"
               placeholder="Nama (mis. Batam - stevedoring)"
               required
-              className={`${input} w-72`}
+              className={`${inputCls} w-72`}
             />
             <input
               name="location"
               placeholder="Lokasi"
-              className={`${input} w-40`}
+              className={`${inputCls} w-40`}
             />
             <input
               name="usd_rate"
               placeholder="Kurs USD→IDR (opsional)"
               inputMode="decimal"
-              className={`${input} w-52`}
+              className={`${inputCls} w-52`}
             />
             <input
               name="fx_source"
               placeholder="Sumber kurs"
-              className={`${input} w-36`}
+              className={`${inputCls} w-36`}
             />
-            <button className={btn}>Buat skenario</button>
+            <button className={btnCls}>Buat skenario</button>
           </form>
         </Card>
       )}
 
       {(scenarios ?? []).length === 0 && (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted">
           Belum ada skenario. Buat satu di atas, lalu impor biaya dari task.
         </p>
       )}
@@ -445,7 +449,7 @@ export default async function CostingPage({
             key={s.id}
             title={`${s.code} — ${s.name}${s.location ? ` (${s.location})` : ""}`}
             right={
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted">
                 Total{" "}
                 <b>
                   <Rp v={s.total_idr} />
@@ -480,7 +484,7 @@ export default async function CostingPage({
                 {s.pending_count ?? 0} baris
               </div>
               {showInternal && (
-                <div className="text-gray-500">
+                <div className="text-muted">
                   Margin (internal)
                   <br />
                   <Rp v={s.margin_total_idr} />
@@ -490,7 +494,7 @@ export default async function CostingPage({
 
             {r && (
               <div
-                className={`mb-4 rounded border p-3 text-sm ${r.ready ? "border-green-300 bg-green-50" : "border-amber-300 bg-amber-50"}`}
+                className={`mb-4 rounded border p-3 text-sm ${r.ready ? "border-ok bg-paper" : "border-warn bg-paper"}`}
               >
                 <div className="mb-1 font-medium">
                   {r.ready
@@ -518,7 +522,7 @@ export default async function CostingPage({
                   </ul>
                 )}
                 {r.warnings.length > 0 && (
-                  <ul className="mt-2 list-disc pl-5 text-gray-600">
+                  <ul className="mt-2 list-disc pl-5 text-muted">
                     {[...new Set(r.warnings.map((w) => w.code))].map((c) => (
                       <li key={c}>{describeCode(WARNING_MESSAGES, c)}</li>
                     ))}
@@ -549,11 +553,11 @@ export default async function CostingPage({
                     >
                       <input type="hidden" name="inquiry_id" value={id} />
                       <input type="hidden" name="scenario_id" value={s.id} />
-                      <button className={btnLight}>{label as string}</button>
+                      <button className={btnLightCls}>{label as string}</button>
                     </form>
                   ))}
                 </div>
-                <details className="mb-4 rounded border p-3 text-sm">
+                <details className="mb-4 rounded border border-rule p-3 text-sm">
                   <summary className="cursor-pointer font-medium">
                     Data skenario &amp; kapal (muncul di dokumen)
                   </summary>
@@ -567,13 +571,13 @@ export default async function CostingPage({
                       name="name"
                       defaultValue={s.name}
                       required
-                      className={`${input} col-span-6`}
+                      className={`${inputCls} col-span-6`}
                     />
                     <input
                       name="location"
                       defaultValue={s.location ?? ""}
                       placeholder="Lokasi"
-                      className={`${input} col-span-6`}
+                      className={`${inputCls} col-span-6`}
                     />
                     {(
                       [
@@ -598,7 +602,7 @@ export default async function CostingPage({
                         name={k}
                         defaultValue={h[k] ?? ""}
                         placeholder={ph}
-                        className={`${input} ${k === "billing_address" ? "col-span-12" : "col-span-6"}`}
+                        className={`${inputCls} ${k === "billing_address" ? "col-span-12" : "col-span-6"}`}
                       />
                     ))}
                     <input
@@ -606,28 +610,28 @@ export default async function CostingPage({
                       defaultValue={s.fx_rates?.USD ?? ""}
                       placeholder="Kurs USD→IDR"
                       inputMode="decimal"
-                      className={`${input} col-span-3`}
+                      className={`${inputCls} col-span-3`}
                     />
                     <input
                       name="fx_source"
                       defaultValue={s.fx_source ?? ""}
                       placeholder="Sumber kurs"
-                      className={`${input} col-span-3`}
+                      className={`${inputCls} col-span-3`}
                     />
-                    <button className={`${btn} col-span-2`}>Simpan</button>
+                    <button className={`${btnCls} col-span-2`}>Simpan</button>
                   </form>
                 </details>
               </>
             )}
 
             {sTasks.length === 0 && canManage && (
-              <p className="mb-3 text-sm text-gray-500">
+              <p className="mb-3 text-sm text-muted">
                 Belum ada task terkait skenario ini (hubungkan di bagian “Task
                 inquiry” di bawah).
               </p>
             )}
             {sTasks.length > 0 && (
-              <p className="mb-3 text-sm text-gray-600">
+              <p className="mb-3 text-sm text-muted">
                 Task:{" "}
                 {sTasks
                   .map((t: Row) => `${t.task_no} (${t.status})`)
@@ -639,7 +643,7 @@ export default async function CostingPage({
               .filter((c) => bySection.has(c))
               .map((c) => (
                 <div key={c} className="mb-2">
-                  <h3 className="mb-1 mt-3 text-sm font-semibold text-gray-700">
+                  <h3 className="mb-1 mt-3 text-sm font-semibold text-muted">
                     {c === "UNSORTED"
                       ? "Belum diklasifikasi"
                       : (sections.find(([x]) => x === c)?.[1] ?? c)}
@@ -657,7 +661,7 @@ export default async function CostingPage({
                     ) : (
                       <div
                         key={l.id}
-                        className="mb-1 rounded border p-2 text-sm"
+                        className="mb-1 rounded border border-rule p-2 text-sm"
                       >
                         {l.description} — <Rp v={l.sell_amount_idr} />
                       </div>
@@ -667,7 +671,7 @@ export default async function CostingPage({
               ))}
             {canManage && (
               <>
-                <h3 className="mb-1 mt-4 text-sm font-semibold text-gray-700">
+                <h3 className="mb-1 mt-4 text-sm font-semibold text-muted">
                   Tambah baris
                 </h3>
                 <LineForm
@@ -676,7 +680,7 @@ export default async function CostingPage({
                   sections={sections}
                   siblings={sLines}
                 />
-                <p className="mb-3 text-xs text-gray-500">
+                <p className="mb-3 text-xs text-muted">
                   Mengubah baris yang sudah dipakai dokumen akan membatalkan
                   dokumen versi itu yang belum terkirim; dokumen yang sudah
                   terkirim tidak diubah (dibuat permintaan revisi).
@@ -687,7 +691,7 @@ export default async function CostingPage({
                       <input type="hidden" name="inquiry_id" value={id} />
                       <input type="hidden" name="scenario_id" value={s.id} />
                       <input type="hidden" name="doc_type" value={t} />
-                      <button className={btn} disabled={!r?.ready}>
+                      <button className={btnCls} disabled={!r?.ready}>
                         {t === "EPDA" ? "Buat EPDA" : "Buat Quotation"}
                       </button>
                     </form>
@@ -697,7 +701,7 @@ export default async function CostingPage({
             )}
 
             {sDocs.length > 0 && (
-              <div className="mt-4 border-t pt-3">
+              <div className="mt-4 border-t border-rule pt-3">
                 <h3 className="mb-1 text-sm font-semibold">
                   Dokumen skenario ini
                 </h3>
@@ -706,11 +710,11 @@ export default async function CostingPage({
                     <li key={d.id} className="flex items-center gap-2">
                       <Link
                         href={`/documents/${d.id}`}
-                        className="text-blue-700 hover:underline"
+                        className="text-brand hover:underline"
                       >
                         {d.doc_no}
                       </Link>
-                      <span className="text-gray-500">
+                      <span className="text-muted">
                         v{d.version}
                         {d.revision > 0 ? ` · rev ${d.revision}` : ""}
                       </span>
@@ -738,8 +742,8 @@ export default async function CostingPage({
                     <input type="hidden" name="inquiry_id" value={id} />
                     <input type="hidden" name="task_id" value={t.id} />
                     <span className="w-28 font-medium">{t.task_no}</span>
-                    <span className="w-28 text-gray-600">{t.status}</span>
-                    <span className="max-w-md flex-1 truncate text-gray-600">
+                    <span className="w-28 text-muted">{t.status}</span>
+                    <span className="max-w-md flex-1 truncate text-muted">
                       {t.scope}
                     </span>
                     <Select
@@ -756,13 +760,13 @@ export default async function CostingPage({
                         ),
                       ]}
                     />
-                    <button className={btnLight}>Simpan</button>
+                    <button className={btnLightCls}>Simpan</button>
                   </form>
                 </li>
               ))}
             </ul>
           </Card>
         )}
-    </main>
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ChevronDown,
+  FileText,
   Inbox,
   LayoutDashboard,
   ListChecks,
@@ -16,6 +17,7 @@ const ICONS = {
   dashboard: LayoutDashboard,
   inquiries: Inbox,
   tasks: ListChecks,
+  documents: FileText,
 };
 type Item = { key: keyof typeof ICONS; href: string; label: string };
 

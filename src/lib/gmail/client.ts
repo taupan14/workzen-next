@@ -11,8 +11,13 @@ export function gmailClient(): gmail_v1.Gmail {
   return google.gmail({ version: "v1", auth });
 }
 
-/** ID pesan inbox 7 hari terakhir. Idempotency dijamin DB, jadi window ini aman di-poll berulang. */
-export async function listRecentMessageIds(max = 50): Promise<string[]> {
+/**
+ * Pesan inbox 7 hari terakhir (id + thread id). Thread id dipakai intake untuk melewati balasan
+ * pada thread approval dokumen (dibaca alur dokumen, bukan intake inquiry).
+ */
+export async function listRecentMessageRefs(
+  max = 50,
+): Promise<{ id: string; threadId: string }[]> {
   const q = [
     "in:inbox",
     "-from:me",
@@ -26,7 +31,14 @@ export async function listRecentMessageIds(max = 50): Promise<string[]> {
     q,
     maxResults: max,
   });
-  return (res.data.messages ?? []).map((m) => m.id!).filter(Boolean);
+  return (res.data.messages ?? [])
+    .filter((m) => m.id)
+    .map((m) => ({ id: m.id!, threadId: m.threadId ?? "" }));
+}
+
+/** ID pesan inbox 7 hari terakhir. Idempotency dijamin DB, jadi window ini aman di-poll berulang. */
+export async function listRecentMessageIds(max = 50): Promise<string[]> {
+  return (await listRecentMessageRefs(max)).map((m) => m.id);
 }
 
 export async function fetchParsedMessage(id: string) {

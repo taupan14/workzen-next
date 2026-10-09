@@ -24,14 +24,14 @@ export default async function DocumentsPage({
   const rows = (data ?? []) as Row[];
 
   return (
-    <main className="mx-auto max-w-6xl p-6">
+    <div className="space-y-6">
       <h1 className="mb-1 text-xl font-semibold">
         Dokumen (EPDA &amp; Quotation)
       </h1>
       <div className="mb-4 flex flex-wrap gap-2 text-sm">
         <Link
           href="/documents"
-          className={`rounded border px-2 py-1 ${!status ? "bg-gray-900 text-white" : ""}`}
+          className={`rounded border border-rule px-2 py-1 ${!status ? "bg-brand text-on-brand" : ""}`}
         >
           Semua
         </Link>
@@ -39,15 +39,15 @@ export default async function DocumentsPage({
           <Link
             key={k}
             href={`/documents?status=${k}`}
-            className={`rounded border px-2 py-1 ${status === k ? "bg-gray-900 text-white" : ""}`}
+            className={`rounded border border-rule px-2 py-1 ${status === k ? "bg-brand text-on-brand" : ""}`}
           >
             {l}
           </Link>
         ))}
       </div>
-      <div className="overflow-x-auto rounded-lg border bg-white">
+      <div className="overflow-x-auto rounded-xl border border-rule bg-paper">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
+          <thead className="bg-mist text-left text-xs uppercase text-muted">
             <tr>
               <th className="p-2">Nomor</th>
               <th className="p-2">Inquiry</th>
@@ -61,21 +61,21 @@ export default async function DocumentsPage({
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="p-4 text-center text-gray-500">
+                <td colSpan={7} className="p-4 text-center text-muted">
                   Belum ada dokumen.
                 </td>
               </tr>
             )}
             {rows.map((d) => (
-              <tr key={d.id} className="border-t">
+              <tr key={d.id} className="border-t border-rule">
                 <td className="p-2">
                   <Link
                     href={`/documents/${d.id}`}
-                    className="text-blue-700 hover:underline"
+                    className="text-brand hover:underline"
                   >
                     {d.doc_no}
                   </Link>{" "}
-                  <span className="text-xs text-gray-500">{d.doc_type}</span>
+                  <span className="text-xs text-muted">{d.doc_type}</span>
                 </td>
                 <td className="p-2">
                   {(d.inquiries as { inquiry_no?: string } | null)
@@ -92,7 +92,7 @@ export default async function DocumentsPage({
                 <td className="p-2">
                   <StatusBadge status={d.status} />
                 </td>
-                <td className="p-2 text-gray-500">
+                <td className="p-2 text-muted">
                   {new Date(d.created_at).toLocaleDateString("id-ID")}
                 </td>
               </tr>
@@ -100,6 +100,6 @@ export default async function DocumentsPage({
           </tbody>
         </table>
       </div>
-    </main>
+    </div>
   );
 }

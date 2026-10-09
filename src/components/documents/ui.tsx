@@ -10,15 +10,18 @@ export const DOC_STATUS_LABEL: Record<string, string> = {
   SUPERSEDED: "Digantikan versi baru",
   CANCELLED: "Dibatalkan",
 };
-const DOC_STATUS_COLOR: Record<string, string> = {
-  DRAFT: "bg-gray-100 text-gray-700",
-  PENDING_APPROVAL: "bg-amber-100 text-amber-800",
-  APPROVED: "bg-blue-100 text-blue-800",
-  REVISION_REQUESTED: "bg-orange-100 text-orange-800",
-  SENT: "bg-green-100 text-green-800",
-  SUPERSEDED: "bg-gray-200 text-gray-500",
-  CANCELLED: "bg-red-100 text-red-700",
+
+// Hanya token tema proyek (mendukung tema gelap): ink, muted, mist, paper, field, rule, brand, warn, danger, ok.
+const DOC_STATUS_TONE: Record<string, string> = {
+  DRAFT: "border-rule text-muted",
+  PENDING_APPROVAL: "border-warn text-warn",
+  APPROVED: "border-brand text-brand",
+  REVISION_REQUESTED: "border-warn text-warn",
+  SENT: "border-ok text-ok",
+  SUPERSEDED: "border-rule text-muted line-through",
+  CANCELLED: "border-danger text-danger",
 };
+
 export const TREATMENT_LABEL: Record<string, string> = {
   CONFIRMED: "Confirmed",
   ESTIMATE: "Estimate",
@@ -26,6 +29,7 @@ export const TREATMENT_LABEL: Record<string, string> = {
   EXCLUDED: "Excluded (tanpa angka)",
   AS_PER_ACTUAL: "As per actual (tanpa angka)",
 };
+
 export const REQUIREMENT_LABEL: Record<string, string> = {
   PENDING: "Pending",
   CONFIRMED: "Confirmed",
@@ -37,7 +41,7 @@ export const REQUIREMENT_LABEL: Record<string, string> = {
 export function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${DOC_STATUS_COLOR[status] ?? "bg-gray-100"}`}
+      className={`inline-block rounded-full border px-2 py-0.5 text-xs font-medium ${DOC_STATUS_TONE[status] ?? "border-rule text-muted"}`}
     >
       {DOC_STATUS_LABEL[status] ?? status}
     </span>
@@ -46,7 +50,7 @@ export function StatusBadge({ status }: { status: string }) {
 
 export const Rp = ({ v }: { v: number | string | null | undefined }) =>
   v == null || v === "" ? (
-    <span className="text-gray-400">-</span>
+    <span className="text-muted">-</span>
   ) : (
     <span className="tabular-nums">{fmtMoney(Number(v))}</span>
   );
@@ -54,11 +58,12 @@ export const Rp = ({ v }: { v: number | string | null | undefined }) =>
 export function Notice({ msg, err }: { msg?: string; err?: string }) {
   if (!msg && !err) return null;
   return (
-    <div
-      className={`mb-4 rounded border px-3 py-2 text-sm ${err ? "border-red-300 bg-red-50 text-red-800" : "border-green-300 bg-green-50 text-green-800"}`}
+    <p
+      role={err ? "alert" : "status"}
+      className={`rounded-md border-l-4 bg-paper px-4 py-3 text-sm ${err ? "border-danger text-danger" : "border-ok text-ok"}`}
     >
       {err ?? msg}
-    </div>
+    </p>
   );
 }
 
@@ -72,12 +77,20 @@ export function Card({
   right?: ReactNode;
 }) {
   return (
-    <section className="mb-6 rounded-lg border bg-white p-4 shadow-sm">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-base font-semibold">{title}</h2>
+    <section className="rounded-xl border border-rule bg-paper p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold">{title}</h2>
         {right}
       </div>
       {children}
     </section>
   );
 }
+
+/** Kelas bersama untuk kontrol formulir agar seragam dengan tema. */
+export const inputCls =
+  "rounded-md border border-rule bg-field px-2 py-1 text-sm text-ink placeholder:text-muted";
+export const btnCls =
+  "rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-on-brand transition-colors hover:bg-brand-ink disabled:cursor-not-allowed disabled:opacity-40";
+export const btnLightCls =
+  "rounded-md border border-rule bg-field px-3 py-1.5 text-sm transition-colors hover:border-brand";

@@ -4,9 +4,10 @@ import { inngest } from "./client";
 import { adminClient } from "@/lib/supabase/admin";
 import {
   fetchParsedMessage,
-  listRecentMessageIds,
+  listRecentMessageRefs,
   mailbox,
 } from "@/lib/gmail/client";
+import { pickIntakeIds } from "@/lib/gmail/intake-filter";
 import { claimOutbox, sendOutboxRow } from "@/lib/email/dispatch";
 import {
   listPendingAttachments,
@@ -49,17 +50,44 @@ export const gmailPoll = inngest.createFunction(
     const db = adminClient();
     try {
       const newIds = await step.run("list-new", async () => {
-        const ids = await listRecentMessageIds();
-        if (!ids.length) return [] as string[];
+        const refs = await listRecentMessageRefs();
+        if (!refs.length) return [] as string[];
         const rows = must(
           await db
             .from("email_messages")
             .select("gmail_message_id")
-            .in("gmail_message_id", ids),
+            .in(
+              "gmail_message_id",
+              refs.map((r) => r.id),
+            ),
           "cek email",
         );
         const known = new Set((rows ?? []).map((r) => r.gmail_message_id));
-        return ids.filter((id) => !known.has(id)).slice(0, MAX_PER_RUN);
+
+        // Balasan pada thread approval dokumen dibaca alur dokumen (poll-approval-replies), bukan
+        // intake inquiry. Disaring SEBELUM dipotong MAX_PER_RUN agar tidak memakan jatah pesan lain.
+        // Bila tabel dokumen belum ada (migrasi belum jalan), intake tetap berjalan normal.
+        const candidateThreads = [
+          ...new Set(
+            refs
+              .filter((r) => !known.has(r.id))
+              .map((r) => r.threadId)
+              .filter(Boolean),
+          ),
+        ];
+        let docThreads = new Set<string>();
+        if (candidateThreads.length) {
+          const docRows = await db
+            .from("document_emails")
+            .select("gmail_thread_id")
+            .eq("kind", "APPROVAL_REQUEST")
+            .in("gmail_thread_id", candidateThreads);
+          if (!docRows.error)
+            docThreads = new Set(
+              (docRows.data ?? []).map((r) => r.gmail_thread_id as string),
+            );
+        }
+        return pickIntakeIds(refs, known, docThreads, MAX_PER_RUN);
       });
 
       const results: IntakeResult[] = [];
