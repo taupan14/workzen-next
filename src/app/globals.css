@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --color-ink: #14232b;
+  --color-muted: #5b6b73;
+  --color-mist: #eef2f1;      /* latar halaman */
+  --color-paper: #fbfcfb;     /* permukaan: header, panel */
+  --color-field: #ffffff;     /* input */
+  --color-rule: #d5dddb;
+  --color-brand: #0f6b63;
+  --color-brand-ink: #0a4d47;
+  --color-on-brand: #ffffff;
+  --color-warn: #b7791f;
+  --color-danger: #b4322f;
+  --color-ok: #3c7a4a;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-ink: #e6eeec;
+  --color-muted: #93a5a3;
+  --color-mist: #0d1416;
+  --color-paper: #141d20;
+  --color-field: #0f171a;
+  --color-rule: #25343a;
+  --color-brand: #3fb8a8;
+  --color-brand-ink: #5ccbbc;
+  --color-on-brand: #06201c;
+  --color-warn: #e0a33b;
+  --color-danger: #f07167;
+  --color-ok: #6fbf7f;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+body { background: var(--color-mist); color: var(--color-ink); transition: background-color .2s, color .2s; }
+:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+
+@keyframes pop { from { opacity: 0; transform: translateY(-4px) scale(.98); } }
+.pop { animation: pop .14s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
